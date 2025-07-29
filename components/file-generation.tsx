@@ -28,16 +28,17 @@ import {
   type GeneratedFile,
   type GenerationProgress,
 } from "@/lib/file-generator"
-import type { DocumentTemplate, Recipient } from "@/lib/types"
+import type { DocumentTemplate, Recipient, DocumentDetails } from "@/lib/types"
 
 interface FileGenerationProps {
   template: DocumentTemplate
   designTemplate: any
+  documentDetails: DocumentDetails
   recipients: Recipient[]
   logoUrl?: string | null
 }
 
-export function FileGeneration({ template, designTemplate, recipients, logoUrl }: FileGenerationProps) {
+export function FileGeneration({ template, designTemplate, documentDetails, recipients, logoUrl }: FileGenerationProps) {
   const [fileType, setFileType] = useState<"pdf" | "png" | "jpg">("pdf")
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedFiles, setGeneratedFiles] = useState<GeneratedFile[]>([])
@@ -61,7 +62,8 @@ export function FileGeneration({ template, designTemplate, recipients, logoUrl }
     })
 
     try {
-      const files = await generateAllFiles(template, designTemplate, recipients, fileType, logoUrl, setProgress)
+      const options = { format: fileType } as const
+      const files = await generateAllFiles(recipients, documentDetails, options, setProgress)
 
       setGeneratedFiles(files)
     } catch (error) {
