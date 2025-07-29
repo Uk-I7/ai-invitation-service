@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation"
 import { useProjectStore } from "@/lib/store"
 import { StepIndicator } from "@/components/step-indicator"
 import { FileGeneration } from "@/components/file-generation"
+import type { DocumentDetails } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -188,6 +189,7 @@ export default function Step8Page() {
         <FileGeneration
           template={template}
           designTemplate={designTemplate}
+          documentDetails={documentDetails}
           recipients={recipients}
           logoUrl={logoFile?.url}
         />
