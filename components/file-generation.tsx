@@ -25,10 +25,14 @@ import {
   createZipFile,
   downloadFile,
   formatFileSize,
-  type GeneratedFile,
-  type GenerationProgress,
 } from "@/lib/file-generator"
-import type { DocumentTemplate, Recipient, DocumentDetails } from "@/lib/types"
+import type {
+  DocumentTemplate,
+  Recipient,
+  DocumentDetails,
+  GeneratedFile,
+  GenerationProgress,
+} from "@/lib/types"
 
 interface FileGenerationProps {
   template: DocumentTemplate
@@ -55,10 +59,11 @@ export function FileGeneration({ template, designTemplate, documentDetails, reci
     setError("")
     setGeneratedFiles([])
     setProgress({
-      current: 0,
       total: recipients.length,
-      currentRecipient: "",
+      completed: 0,
+      current: "",
       status: "preparing",
+      errors: [],
     })
 
     try {
@@ -89,7 +94,7 @@ export function FileGeneration({ template, designTemplate, documentDetails, reci
 
   const handleDownloadSingle = (file: GeneratedFile) => {
     try {
-      downloadFile(file.blob, file.fileName)
+      downloadFile(file.url, file.fileName)
     } catch (error) {
       console.error("파일 다운로드 오류:", error)
       setError("파일 다운로드 중 오류가 발생했습니다.")
@@ -102,7 +107,7 @@ export function FileGeneration({ template, designTemplate, documentDetails, reci
 
   const getProgressPercentage = () => {
     if (!progress) return 0
-    return (progress.current / progress.total) * 100
+    return (progress.completed / progress.total) * 100
   }
 
   const getStatusMessage = () => {
@@ -112,11 +117,11 @@ export function FileGeneration({ template, designTemplate, documentDetails, reci
       case "preparing":
         return "파일 생성 준비 중..."
       case "generating":
-        return `${progress.currentRecipient} 파일 생성 중... (${progress.current}/${progress.total})`
+        return `${progress.current} 파일 생성 중... (${progress.completed}/${progress.total})`
       case "completed":
         return `모든 파일 생성 완료! (${progress.total}개)`
       case "error":
-        return progress.error || "오류 발생"
+        return progress.errors.join(", ") || "오류 발생"
       default:
         return ""
     }
@@ -224,11 +229,11 @@ export function FileGeneration({ template, designTemplate, documentDetails, reci
               <div className="text-center text-sm text-gray-600">{getStatusMessage()}</div>
               <div className="grid md:grid-cols-3 gap-4 text-sm">
                 <div className="text-center">
-                  <div className="font-medium text-blue-600">{progress.current}</div>
+                  <div className="font-medium text-blue-600">{progress.completed}</div>
                   <div className="text-gray-500">완료</div>
                 </div>
                 <div className="text-center">
-                  <div className="font-medium text-gray-600">{progress.total - progress.current}</div>
+                  <div className="font-medium text-gray-600">{progress.total - progress.completed}</div>
                   <div className="text-gray-500">대기</div>
                 </div>
                 <div className="text-center">
@@ -341,7 +346,7 @@ export function FileGeneration({ template, designTemplate, documentDetails, reci
                       </div>
                       <div className="flex justify-between">
                         <span>생성 완료 시간:</span>
-                        <span className="font-medium">{generatedFiles[0]?.generatedAt.toLocaleTimeString()}</span>
+                        <span className="font-medium">{generatedFiles[0]?.createdAt.toLocaleTimeString()}</span>
                       </div>
                     </div>
                   </div>
