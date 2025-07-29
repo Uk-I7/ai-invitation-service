@@ -309,6 +309,7 @@ export async function generateSingleFile(
 
     let url: string
     let size: number
+    let blob: Blob
 
     if (options.format === "pdf") {
       const pdf = new jsPDF({
@@ -322,34 +323,22 @@ export async function generateSingleFile(
 
       pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, imgWidth, imgHeight)
       const pdfBlob = pdf.output("blob")
+      blob = pdfBlob
       url = URL.createObjectURL(pdfBlob)
       size = pdfBlob.size
     } else {
       const quality = options.quality || 0.9
       const mimeType = options.format === "png" ? "image/png" : "image/jpeg"
 
-      canvas.toBlob(
-        (blob) => {
-          if (blob) {
-            url = URL.createObjectURL(blob)
-            size = blob.size
-          }
-        },
-        mimeType,
-        quality,
-      )
-
-      // Promise로 변환
-      const blob = await new Promise<Blob>((resolve) => {
+      blob = await new Promise<Blob>((resolve) => {
         canvas.toBlob(
-          (blob) => {
-            if (blob) resolve(blob)
+          (b) => {
+            if (b) resolve(b)
           },
           mimeType,
           quality,
         )
       })
-
       url = URL.createObjectURL(blob)
       size = blob.size
     }
@@ -358,8 +347,10 @@ export async function generateSingleFile(
       id: `${recipient.id}_${options.format}`,
       recipientId: recipient.id,
       recipientName: recipient.name,
-      format: options.format,
+      fileType: options.format,
+      fileName: `${recipient.name}_초청장.${options.format}`,
       url,
+      blob,
       size,
       createdAt: new Date(),
     }
@@ -422,10 +413,7 @@ export async function createZipFile(files: GeneratedFile[]): Promise<Blob> {
 
   for (const file of files) {
     try {
-      const response = await fetch(file.url)
-      const blob = await response.blob()
-      const fileName = `${file.recipientName}_초청장.${file.format}`
-      zip.file(fileName, blob)
+      zip.file(file.fileName, file.blob)
     } catch (error) {
       console.error(`ZIP 파일 추가 실패 (${file.recipientName}):`, error)
     }
@@ -435,11 +423,15 @@ export async function createZipFile(files: GeneratedFile[]): Promise<Blob> {
 }
 
 // 파일 다운로드
-export function downloadFile(url: string, filename: string): void {
+export function downloadFile(data: string | Blob, filename: string): void {
   const link = document.createElement("a")
+  const url = typeof data === "string" ? data : URL.createObjectURL(data)
   link.href = url
   link.download = filename
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
+  if (typeof data !== "string") {
+    URL.revokeObjectURL(url)
+  }
 }

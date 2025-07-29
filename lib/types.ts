@@ -85,8 +85,10 @@ export interface GeneratedFile {
   id: string
   recipientId: string
   recipientName: string
-  format: "pdf" | "png" | "jpg"
+  fileType: "pdf" | "png" | "jpg"
+  fileName: string
   url: string
+  blob: Blob
   size: number
   createdAt: Date
 }
