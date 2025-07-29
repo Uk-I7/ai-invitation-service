@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useProjectStore } from "@/lib/store"
+import { useAdminStore } from "@/lib/admin-store"
 import { StepIndicator } from "@/components/step-indicator"
 import { AIRevision } from "@/components/ai-revision"
 import { Button } from "@/components/ui/button"
@@ -17,14 +18,9 @@ export default function Step6Page() {
     useProjectStore()
 
   const [revisedTemplate, setRevisedTemplate] = useState<DocumentTemplate | null>(null)
-  const [apiKey, setApiKey] = useState("")
 
-  useEffect(() => {
-    const savedApiKey = localStorage.getItem("openai-api-key")
-    if (savedApiKey) {
-      setApiKey(savedApiKey)
-    }
-  }, [])
+  const { apiKey: storedApiKey } = useAdminStore()
+  const apiKey = storedApiKey || (typeof window !== "undefined" ? localStorage.getItem("openai-api-key") || "" : "")
 
   const handleRevisionComplete = (newTemplate: DocumentTemplate) => {
     setRevisedTemplate(newTemplate)
