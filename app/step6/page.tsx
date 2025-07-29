@@ -207,10 +207,14 @@ export default function Step6Page() {
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
               OpenAI API 키가 설정되지 않았습니다.{" "}
-              <Button variant="link" className="p-0 h-auto" onClick={() => router.push("/step2")}>
-                2단계로 돌아가서
+              <Button
+                variant="link"
+                className="p-0 h-auto"
+                onClick={() => router.push("/admin")}
+              >
+                관리자 설정으로 이동
               </Button>{" "}
-              API 키를 설정해주세요.
+              후 API 키를 입력해주세요.
             </AlertDescription>
           </Alert>
         )}
